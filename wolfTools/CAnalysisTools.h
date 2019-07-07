@@ -18,6 +18,9 @@ public:
     void AnalysisRoundData(int starTag, int endTag,const xlnt::worksheet &sheet);
     eGameCard getGameCard(std::string str);
 
+    void SaveExcel(const char* path,const char* excelName);
+    void SaveWinRateExcel(xlnt::workbook &outWb,const char* pTitle);
+
 
 private:
     xlnt::workbook m_wb;

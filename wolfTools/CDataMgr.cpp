@@ -96,3 +96,8 @@ const std::set<int> & CDataMgr::getAllJobNum()
 {
     return m_setPlayerJobNum;
 }
+
+const std::map<int, PlayVecData> & CDataMgr::getPlayVecData()
+{
+    return m_mapPlayerData;
+}

@@ -83,6 +83,7 @@ void CAnalysisTools::AnalysisData()
     }
     CDataMgrInst::singleton()->calWinRate();
     CDataMgrInst::singleton()->print();
+    this->SaveExcel("","OutRank.xlsx");
 }
 
 void CAnalysisTools::AnalysisTag(xlnt::cell_vector row)
@@ -142,4 +143,89 @@ eGameCard CAnalysisTools::getGameCard(std::string str)
     }
 
     return eGameCard_None;
+}
+
+void CAnalysisTools::SaveExcel(const char* path, const char* excelName)
+{    
+    xlnt::workbook wbOut;
+    
+    this->SaveWinRateExcel(wbOut,"WinRate");
+
+    wbOut.save(excelName);
+}
+
+
+void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
+{
+    xlnt::worksheet ws = outWb.active_sheet();
+    ws.title("Sheet1");
+    //xlnt::worksheet wsOut = outWb.create_sheet("Sheet1"); // copy a sheet before doing anything with "Sheet1"
+    xlnt::worksheet wsOut = outWb.copy_sheet(ws);
+    wsOut.title(pTitle);
+    std::vector< std::vector<std::string> > wholeWorksheet;
+    
+   
+    // 填key,中文问题后面解决
+    std::vector<std::string> firstRow;
+    firstRow.push_back("JobNum");
+    firstRow.push_back("Name");
+    firstRow.push_back("Rounds");
+    firstRow.push_back("rate");
+    firstRow.push_back("Good");
+    firstRow.push_back("rate");
+    firstRow.push_back("Bad");
+    firstRow.push_back("rate");
+
+    
+    wholeWorksheet.push_back(firstRow);
+
+    const std::map<int, PlayVecData> & mapPlayVecData = CDataMgrInst::singleton()->getPlayVecData();
+    for (std::map<int, PlayVecData>::const_iterator iter = mapPlayVecData.begin();
+        iter != mapPlayVecData.end();
+        iter++) {
+        std::vector<std::string> singleRow;
+        const PlayVecData &vecDate = iter->second;
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
+        //singleRow.push_back(vecDate.vecData[0].name);
+
+        std::map<eGameCard, WinRate>::const_iterator iterWin = vecDate.mapWinRate.find(eGameCard_All);
+        if (iterWin != vecDate.mapWinRate.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.allRound));
+            singleRow.push_back(std::to_string(int(iterWin->second.rate * 100)) + "%");
+        }
+        iterWin = vecDate.mapWinRate.find(eGameCard_Good);
+        if (iterWin != vecDate.mapWinRate.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.allRound));
+            singleRow.push_back(std::to_string(int(iterWin->second.rate * 100)) + "%");
+        }
+        iterWin = vecDate.mapWinRate.find(eGameCard_Bad);
+        if (iterWin != vecDate.mapWinRate.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.allRound));
+            singleRow.push_back(std::to_string(int(iterWin->second.rate * 100)) + "%");
+        }
+
+        wholeWorksheet.push_back(singleRow);
+    }
+
+
+   /* for (int outer = 0; outer < mapPlayVecData.size(); outer++)
+    {    
+        std::vector<std::string> singleRow;   
+        for (int inner = 0; inner < 4; inner++)
+        {
+            std::string val = std::to_string(inner + 1);
+            singleRow.push_back(val);
+        }    
+        wholeWorksheet.push_back(singleRow);        
+    }*/
+
+
+    for (int fOut = 0; fOut < wholeWorksheet.size(); fOut++)
+    {        
+        for (int fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
+        { 
+            wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));         
+        }
+    }
 }

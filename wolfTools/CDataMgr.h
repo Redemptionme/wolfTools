@@ -22,6 +22,7 @@ public:
 
     const std::map<int, std::vector<RoundData> > &getAllData();
     const std::set<int> &getAllJobNum();
+    const std::map<int, PlayVecData> &getPlayVecData();
 
 private:
     std::map<int, std::vector<RoundData> > m_mapRoundData;

@@ -24,8 +24,9 @@ void PlayVecData::CalWinRateData()
 {
     mapWinRate.clear();
     WinRate rate;
-    mapWinRate.insert(std::make_pair(eGameCard_God, rate));
+    mapWinRate.insert(std::make_pair(eGameCard_Good, rate));
     mapWinRate.insert(std::make_pair(eGameCard_Bad, rate));
+    mapWinRate.insert(std::make_pair(eGameCard_All, rate));
 
 
     for (int i = 0; i < vecData.size(); i++) {
@@ -39,18 +40,31 @@ void PlayVecData::CalWinRateData()
         }
         WinRate &rate = mapWinRate[data.gameCard];
         rate.allRound++;
+        bool bWin = false;
         if (data.winScore > 0) {
+            bWin = true;
+        }
+        if (bWin) {
             rate.winRound++;
         }
-        // 如果是狼
-        if (data.gameCard < eGameCard_Cm) {
-            mapWinRate[eGameCard_Bad].winRound++;            
-        } else if (data.gameCard < eGameCard_Count) {
-            mapWinRate[eGameCard_God].winRound++;        
-        }
-        mapWinRate[eGameCard_Bad].allRound++;
-        mapWinRate[eGameCard_God].allRound++;
 
+        // 如果是狼
+        if (data.gameCard < eGameCard_Cm ) {
+            if (bWin) {
+                mapWinRate[eGameCard_Bad].winRound++;
+            }
+            mapWinRate[eGameCard_Bad].allRound++;            
+        } else if (data.gameCard < eGameCard_Count ) {            
+            if (bWin) {
+                mapWinRate[eGameCard_Good].winRound++;
+            }
+            mapWinRate[eGameCard_Good].allRound++;
+        }
+
+        mapWinRate[eGameCard_All].allRound++;
+        if (bWin) {
+            mapWinRate[eGameCard_All].winRound++;
+        }
     }
 
     for (std::map<eGameCard, WinRate>::iterator iterCal = mapWinRate.begin();
@@ -59,3 +73,4 @@ void PlayVecData::CalWinRateData()
         iterCal->second.Cal();
     }
 }
+

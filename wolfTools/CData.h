@@ -21,8 +21,9 @@ enum eGameCard {
 
     eGameCard_Count,
     // 目前看应该可以当总类身份卡用
-    eGameCard_God,
+    eGameCard_Good,
     eGameCard_Bad,
+    eGameCard_All,
 };
 
 // 与excel统一
@@ -145,6 +146,7 @@ public:
     WinRate()
         :winRound(0)
         , allRound(0)
+        , rate(0.0f)
     {
         
     }

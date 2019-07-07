@@ -12,6 +12,11 @@
 #include <string.h>
 #include <wchar.h>
 
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <assert.h>
+
 
 // unicode to utf8
 std::string static wstringToUtf8(const std::wstring& str)
@@ -77,6 +82,11 @@ std::string static UnicodeToANSI(const std::wstring & wstr)
 std::wstring static ANSIToUnicode(const std::string & str)
 {
     std::wstring ret;
+    TCHAR sA[256];
+    wsprintfW(sA, L"%S", str);    
+    ret = sA;
+    return ret;
+    /*std::wstring ret;
     std::mbstate_t state = {};
     const char *src = str.data();
     size_t len = std::mbsrtowcs(nullptr, &src, 0, &state);
@@ -87,7 +97,7 @@ std::wstring static ANSIToUnicode(const std::string & str)
             ret.assign(buff.get(), len);
         }
     }
-    return ret;
+    return ret;*/
 }
 // UTF-8 <=> ANSI
 std::string static UTF8ToANSI(const std::string & str)
@@ -99,3 +109,36 @@ std::string static ANSIToUTF8(const std::string & str)
 {
     return UnicodeToUTF8(ANSIToUnicode(str));
 }
+
+//
+//char* Unicode2Utf8(const char* unicode)
+//{
+//    int len;
+//    len = WideCharToMultiByte(CP_UTF8, 0, (const wchar_t*)unicode, -1, NULL, 0, NULL, NULL);
+//    char *szUtf8 = (char*)malloc(len + 1);
+//    memset(szUtf8, 0, len + 1);
+//    WideCharToMultiByte(CP_UTF8, 0, (const wchar_t*)unicode, -1, szUtf8, len, NULL, NULL);
+//    return szUtf8;
+//}
+//
+//char* Ansi2Unicode(const char* str)
+//{
+//    int dwUnicodeLen = MultiByteToWideChar(CP_ACP, 0, str, -1, NULL, 0);
+//    if (!dwUnicodeLen)
+//    {
+//        return strdup(str);
+//    }
+//    size_t num = dwUnicodeLen * sizeof(wchar_t);
+//    wchar_t *pwText = (wchar_t*)malloc(num);
+//    memset(pwText, 0, num);
+//    MultiByteToWideChar(CP_ACP, 0, str, -1, pwText, dwUnicodeLen);
+//    return (char*)pwText;
+//}
+//
+//char* ConvertAnsiToUtf8(const char* str)
+//{
+//    char* unicode = Ansi2Unicode(str);
+//    char* utf8 = Unicode2Utf8(unicode);
+//    free(unicode);
+//    return utf8;
+//}
