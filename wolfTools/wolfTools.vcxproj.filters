@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="头文件\排行版">
-      <UniqueIdentifier>{f5f1cd9c-5201-43ed-8982-64ce3143b9eb}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -32,12 +29,6 @@
     </ClInclude>
     <ClInclude Include="SingletonTemplate.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="IRank.h">
-      <Filter>头文件\排行版</Filter>
-    </ClInclude>
-    <ClInclude Include="CTotalRank.h">
-      <Filter>头文件\排行版</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -57,9 +48,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CData.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CTotalRank.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

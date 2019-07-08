@@ -7,6 +7,7 @@
 #include "CDataMgr.h"
 
 CAnalysisTools::CAnalysisTools()
+    :m_bLuckToDetialScore(false)
 {
 }
 
@@ -81,7 +82,8 @@ void CAnalysisTools::AnalysisData()
             AnalysisRoundData(roundVec[i] + 1, roundVec[i] + ROUND_PlayNum, sheet);
         }
     }
-    CDataMgrInst::singleton()->calWinRate();
+    this->setLuckToDetailTotalScore(true);
+    CDataMgrInst::singleton()->calAllData();
     CDataMgrInst::singleton()->print();
     this->SaveExcel("","OutRank.xlsx");
 }
@@ -149,7 +151,8 @@ void CAnalysisTools::SaveExcel(const char* path, const char* excelName)
 {    
     xlnt::workbook wbOut;
     
-    this->SaveWinRateExcel(wbOut,"WinRate");
+    this->SaveWinRateExcel(wbOut,"胜率数据");
+    this->SaveScoreExcel(wbOut,"分数数据");
 
     wbOut.save(excelName);
 }
@@ -161,25 +164,28 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
     ws.title("Sheet1");
     //xlnt::worksheet wsOut = outWb.create_sheet("Sheet1"); // copy a sheet before doing anything with "Sheet1"
     xlnt::worksheet wsOut = outWb.copy_sheet(ws);
-    wsOut.title(pTitle);
+    wsOut.title(ANSIToUTF8(pTitle));
     std::vector< std::vector<std::string> > wholeWorksheet;
     
    
     // 填key,中文问题后面解决
     std::vector<std::string> firstRow;
-    firstRow.push_back("JobNum");
-    firstRow.push_back("Name");
-    firstRow.push_back("Rounds");
-    firstRow.push_back("rate");
-    firstRow.push_back("Good");
-    firstRow.push_back("rate");
-    firstRow.push_back("Bad");
-    firstRow.push_back("rate");
+    firstRow.push_back(ANSIToUTF8("工号"));
+    firstRow.push_back(ANSIToUTF8("名字"));
+    firstRow.push_back(ANSIToUTF8("总场数"));
+    firstRow.push_back(ANSIToUTF8("总场数胜率"));
+    firstRow.push_back(ANSIToUTF8("好人阵营场数"));
+    firstRow.push_back(ANSIToUTF8("好人阵营胜率"));
+    firstRow.push_back(ANSIToUTF8("狼人阵营场数"));
+    firstRow.push_back(ANSIToUTF8("狼人阵营胜率"));
 
+    for (int i = eGameCard_Langr; i < eGameCard_Count; i++ ) {
+        std::string str = GameCardTagStrs[i] + "场数";
+        std::string str2 = GameCardTagStrs[i] + "胜率";
+        firstRow.push_back(ANSIToUTF8(str));
+        firstRow.push_back(ANSIToUTF8(str2));
+    }
 
-    firstRow.push_back(ANSIToUTF8("一"));
-
-    
     wholeWorksheet.push_back(firstRow);
 
     const std::map<int, PlayVecData> & mapPlayVecData = CDataMgrInst::singleton()->getPlayVecData();
@@ -188,11 +194,11 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
         iter++) {
         std::vector<std::string> singleRow;
         const PlayVecData &vecDate = iter->second;
-        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
-        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
-        //singleRow.push_back(vecDate.vecData[0].name);
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));        
+        singleRow.push_back(ANSIToUTF8(vecDate.vecData[0].name));
 
-        std::map<eGameCard, WinRate>::const_iterator iterWin = vecDate.mapWinRate.find(eGameCard_All);
+
+        std::map<eGameCard, WinRate>::const_iterator iterWin = vecDate.mapWinRate.find(eGameCard_All);        
         if (iterWin != vecDate.mapWinRate.end()) {
             singleRow.push_back(std::to_string(iterWin->second.allRound));
             singleRow.push_back(std::to_string(int(iterWin->second.rate * 100)) + "%");
@@ -206,6 +212,21 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
         if (iterWin != vecDate.mapWinRate.end()) {
             singleRow.push_back(std::to_string(iterWin->second.allRound));
             singleRow.push_back(std::to_string(int(iterWin->second.rate * 100)) + "%");
+        }
+        
+
+        for (int i = eGameCard_Langr; i < eGameCard_Count; i++) {
+            std::string str = "0";
+            std::string str2 = "0%";
+            iterWin = vecDate.mapWinRate.find((eGameCard)i);
+            if (iterWin != vecDate.mapWinRate.end()) {
+                str = std::to_string(iterWin->second.allRound);
+                str2 = std::to_string(int(iterWin->second.rate * 100)) + "%";
+
+            }
+
+            singleRow.push_back(str);
+            singleRow.push_back(str2);
         }
 
         wholeWorksheet.push_back(singleRow);
@@ -231,4 +252,112 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
             wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));         
         }
     }
+}
+
+void CAnalysisTools::SaveScoreExcel(xlnt::workbook &outWb, const char* pTitle)
+{
+    xlnt::worksheet ws = outWb.active_sheet();
+    ws.title("Sheet1");
+    //xlnt::worksheet wsOut = outWb.create_sheet("Sheet1"); // copy a sheet before doing anything with "Sheet1"
+    xlnt::worksheet wsOut = outWb.copy_sheet(ws);
+    wsOut.title(ANSIToUTF8(pTitle));
+    std::vector< std::vector<std::string> > wholeWorksheet;
+
+
+    // 填key,中文问题后面解决
+    std::vector<std::string> firstRow;
+    firstRow.push_back(ANSIToUTF8("工号"));
+    firstRow.push_back(ANSIToUTF8("名字"));
+    firstRow.push_back(ANSIToUTF8("总分"));
+    firstRow.push_back(ANSIToUTF8("总场数"));
+    firstRow.push_back(ANSIToUTF8("平均分"));
+    firstRow.push_back(ANSIToUTF8("好人阵营总分"));
+    firstRow.push_back(ANSIToUTF8("好人阵营总场数"));
+    firstRow.push_back(ANSIToUTF8("好人阵营平均分"));
+    firstRow.push_back(ANSIToUTF8("狼人阵营总分"));
+    firstRow.push_back(ANSIToUTF8("狼人阵营总场数"));
+    firstRow.push_back(ANSIToUTF8("狼人阵营平均分"));
+
+    for (int i = eGameCard_Langr; i < eGameCard_Count; i++) {
+        std::string str = GameCardTagStrs[i] + "总分";
+        std::string str2 = GameCardTagStrs[i] + "总场数";
+        std::string str3 = GameCardTagStrs[i] + "平均分";
+        firstRow.push_back(ANSIToUTF8(str));
+        firstRow.push_back(ANSIToUTF8(str2));
+        firstRow.push_back(ANSIToUTF8(str3));
+    }
+
+    wholeWorksheet.push_back(firstRow);
+
+    char tempStr[100];
+    const std::map<int, PlayVecData> & mapPlayVecData = CDataMgrInst::singleton()->getPlayVecData();
+    for (std::map<int, PlayVecData>::const_iterator iter = mapPlayVecData.begin();
+        iter != mapPlayVecData.end();
+        iter++) {
+        std::vector<std::string> singleRow;
+        const PlayVecData &vecDate = iter->second;
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
+        singleRow.push_back(ANSIToUTF8(vecDate.vecData[0].name));
+
+
+        std::map<eGameCard, ScoreData>::const_iterator iterWin = vecDate.mapScore.find(eGameCard_All);
+        if (iterWin != vecDate.mapScore.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.totalScore));
+            singleRow.push_back(std::to_string(iterWin->second.totalRound));
+            
+            memset(tempStr, 0, sizeof(tempStr));
+            sprintf_s(tempStr, sizeof(tempStr), "%.2f", iterWin->second.averageScore);
+            singleRow.push_back(tempStr);
+        }
+        iterWin = vecDate.mapScore.find(eGameCard_Good);
+        if (iterWin != vecDate.mapScore.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.totalScore));
+            singleRow.push_back(std::to_string(iterWin->second.totalRound));
+            memset(tempStr, 0, sizeof(tempStr));
+            sprintf_s(tempStr, sizeof(tempStr), "%.2f", iterWin->second.averageScore);
+            singleRow.push_back(tempStr);
+        }
+        iterWin = vecDate.mapScore.find(eGameCard_Bad);
+        if (iterWin != vecDate.mapScore.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.totalScore));
+            singleRow.push_back(std::to_string(iterWin->second.totalRound));
+            memset(tempStr, 0, sizeof(tempStr));
+            sprintf_s(tempStr, sizeof(tempStr), "%.2f", iterWin->second.averageScore);
+            singleRow.push_back(tempStr);
+        }
+
+
+        for (int i = eGameCard_Langr; i < eGameCard_Count; i++) {
+            std::string str = "0";
+            std::string str2 = "0";
+            std::string str3 = "0";
+            iterWin = vecDate.mapScore.find((eGameCard)i);
+            if (iterWin != vecDate.mapScore.end()) {
+                str = std::to_string(iterWin->second.totalScore);
+                str2 = std::to_string(iterWin->second.totalRound);
+                memset(tempStr, 0, sizeof(tempStr));
+                sprintf_s(tempStr, sizeof(tempStr), "%.2f", iterWin->second.averageScore);                
+                str3 = tempStr;
+            }
+
+            singleRow.push_back(str);
+            singleRow.push_back(str2);
+            singleRow.push_back(str3);
+        }
+
+        wholeWorksheet.push_back(singleRow);
+    }
+
+    for (int fOut = 0; fOut < wholeWorksheet.size(); fOut++)
+    {
+        for (int fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
+        {
+            wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));
+        }
+    }
+}
+
+void CAnalysisTools::setLuckToDetailTotalScore(bool bVal)
+{
+    m_bLuckToDetialScore = bVal;
 }

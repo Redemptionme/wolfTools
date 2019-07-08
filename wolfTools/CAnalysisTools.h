@@ -20,13 +20,17 @@ public:
 
     void SaveExcel(const char* path,const char* excelName);
     void SaveWinRateExcel(xlnt::workbook &outWb,const char* pTitle);
+    void SaveScoreExcel(xlnt::workbook &outWb,const char* pTitle);
 
+public:
+    void setLuckToDetailTotalScore(bool bVal);
 
 private:
     xlnt::workbook m_wb;
     std::vector< xlnt::worksheet> m_completeSheet;
     int proDataTag[eProPData_Count];
     std::map<std::string, eGameCard> mapGameCardTags;
+    bool m_bLuckToDetialScore;
 };
 
 typedef ChaSingleton<CAnalysisTools>  CAnalysisToolsInst;

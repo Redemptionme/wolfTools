@@ -77,12 +77,12 @@ void CDataMgr::print()
 
 }
 
-void CDataMgr::calWinRate()
+void CDataMgr::calAllData()
 {
     for (std::set<int>::iterator iter = m_setPlayerJobNum.begin(); iter != m_setPlayerJobNum.end(); iter++) {
         int jobNum = *iter;
         std::map<int, PlayVecData>::iterator iter2 = m_mapPlayerData.find(jobNum);
-        iter2->second.CalWinRateData();
+        iter2->second.CalAllData();
     }
 
 }

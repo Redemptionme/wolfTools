@@ -155,15 +155,48 @@ public:
             rate = float(winRound) / (float)allRound;
         }
     }
-    
 };
+
+struct ScoreData {
+public:
+    ScoreData()
+     :totalScore(0)
+     ,averageScore(0.0f)
+     ,totalRound(0)
+    {
+
+    }
+
+    void Cal() {
+        if (totalRound != 0) {
+            averageScore = float(totalScore) / (float)totalRound;
+        }
+    }
+
+    int totalScore;
+    float averageScore;
+    int totalRound;
+};
+
+
 
 struct PlayVecData {
 public:
+    PlayVecData()         
+    {
+
+    }
     std::vector<PlayerData> vecData;
+
+    int getRounds(eGameCard eCard);
+
+    void CalAllData();
     void CalWinRateData();
+    void CalScoreData();
 
     std::map<eGameCard, WinRate> mapWinRate;
+    std::map<eGameCard, ScoreData> mapScore;
+    
 };
 
 

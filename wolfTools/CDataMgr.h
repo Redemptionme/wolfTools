@@ -18,7 +18,7 @@ public:
     void addData(const PlayerData &data);
     void addPlayData(const PlayerData &pData);
     void print();
-    void calWinRate();
+    void calAllData();
 
     const std::map<int, std::vector<RoundData> > &getAllData();
     const std::set<int> &getAllJobNum();

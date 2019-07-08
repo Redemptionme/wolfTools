@@ -163,8 +163,6 @@
     <ClInclude Include="CAnalysisTools.h" />
     <ClInclude Include="CData.h" />
     <ClInclude Include="CDataMgr.h" />
-    <ClInclude Include="CTotalRank.h" />
-    <ClInclude Include="IRank.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SingletonTemplate.h" />
   </ItemGroup>
@@ -173,7 +171,6 @@
     <ClCompile Include="CData.cpp" />
     <ClCompile Include="CDataMgr.cpp" />
     <ClCompile Include="CTools.h" />
-    <ClCompile Include="CTotalRank.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

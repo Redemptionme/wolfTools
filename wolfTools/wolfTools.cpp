@@ -130,14 +130,7 @@ int main()
 {    
     CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
     //testWrite();
-    std::string name = "一";
-    std::wstring ls= ANSIToUnicode(name);
-    std::string utf = UnicodeToUTF8(ls);
-
-    std::string name2 = "涓€";
-    std::wstring ls2 = UTF8ToUnicode(name2);
-    std::string utf2 = UnicodeToANSI(ls2);
-
+    
     std::cout << "Hello World!\n"; 
 }
 
