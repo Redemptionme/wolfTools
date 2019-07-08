@@ -176,6 +176,9 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
     firstRow.push_back("Bad");
     firstRow.push_back("rate");
 
+
+    firstRow.push_back(ANSIToUTF8("һ"));
+
     
     wholeWorksheet.push_back(firstRow);
 

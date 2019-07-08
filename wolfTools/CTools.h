@@ -60,13 +60,25 @@ std::wstring static UTF8ToUnicode(const std::string & str)
 // Unicode <=> ANSI
 std::string static UnicodeToANSI(const std::wstring & wstr)
 {
-    std::string ret;
+    std::string strLocale = setlocale(LC_ALL, "");
+    const wchar_t* wchSrc = wstr.c_str();
+    size_t nDestSize = wcstombs(NULL, wchSrc, 0) + 1;
+    char *chDest = new char[nDestSize];
+    memset(chDest, 0, nDestSize);
+    wcstombs(chDest, wchSrc, nDestSize);
+    std::string strResult = chDest;
+    delete[]chDest;
+    setlocale(LC_ALL, strLocale.c_str());
+    return strResult;
+
+   /* std::string ret;
     char sA[256];
     wsprintfA(sA, "%S", wstr.data());
     ret = sA;
-    return ret;
+    return ret;*/
 
-    /*std::mbstate_t state = {};
+    /*std::string ret;
+    std::mbstate_t state = {};
     const wchar_t *src = wstr.data();
     size_t len = std::wcsrtombs(nullptr, &src, 0, &state);
     if (static_cast<size_t>(-1) != len) {
@@ -81,11 +93,23 @@ std::string static UnicodeToANSI(const std::wstring & wstr)
 
 std::wstring static ANSIToUnicode(const std::string & str)
 {
-    std::wstring ret;
+    std::string strLocale = setlocale(LC_ALL, "");
+    const char* chSrc = str.c_str();
+    size_t nDestSize = mbstowcs(NULL, chSrc, 0) + 1;
+    wchar_t* wchDest = new wchar_t[nDestSize];
+    wmemset(wchDest, 0, nDestSize);
+    mbstowcs(wchDest, chSrc, nDestSize);
+    std::wstring wstrResult = wchDest;
+    delete[]wchDest;
+    setlocale(LC_ALL, strLocale.c_str());
+    return wstrResult;
+
+    /*std::wstring ret;
     TCHAR sA[256];
-    wsprintfW(sA, L"%S", str);    
+    wsprintfW(sA, L"%S", str);
     ret = sA;
-    return ret;
+    return ret;*/
+
     /*std::wstring ret;
     std::mbstate_t state = {};
     const char *src = str.data();
