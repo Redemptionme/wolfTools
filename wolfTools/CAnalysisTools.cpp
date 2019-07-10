@@ -35,7 +35,9 @@ void CAnalysisTools::InitRightData()
         std::string::size_type idx = str.find("2019");
         if (idx != std::string::npos)
         {
-            std::string e = ws.cell(13, 2).to_string();
+            std::string e = ws.cell(14, 2).to_string();
+            std::string eTemp = UTF8ToANSI(e);
+
             if (!e.empty()) {
                 m_completeSheet.push_back(ws);
             }

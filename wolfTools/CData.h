@@ -38,7 +38,7 @@ const std::string GameCardTagStrs[eGameCard_Count] = {
     ,"猎人"
     ,"白痴"
     ,"守卫"
-    ,"黑商商人"
+    ,"黑市商人"
 };
 
 enum eGameCamp {
