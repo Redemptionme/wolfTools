@@ -155,6 +155,7 @@ void CAnalysisTools::SaveExcel(const char* path, const char* excelName)
     
     this->SaveWinRateExcel(wbOut,"胜率数据");
     this->SaveScoreExcel(wbOut,"分数数据");
+    this->SaveRankExcel(wbOut,"奖励排行版");
 
     wbOut.save(excelName);
 }
@@ -169,8 +170,7 @@ void CAnalysisTools::SaveWinRateExcel(xlnt::workbook &outWb, const char* pTitle)
     wsOut.title(ANSIToUTF8(pTitle));
     std::vector< std::vector<std::string> > wholeWorksheet;
     
-   
-    // 填key,中文问题后面解决
+    
     std::vector<std::string> firstRow;
     firstRow.push_back(ANSIToUTF8("工号"));
     firstRow.push_back(ANSIToUTF8("名字"));
@@ -265,8 +265,7 @@ void CAnalysisTools::SaveScoreExcel(xlnt::workbook &outWb, const char* pTitle)
     wsOut.title(ANSIToUTF8(pTitle));
     std::vector< std::vector<std::string> > wholeWorksheet;
 
-
-    // 填key,中文问题后面解决
+        
     std::vector<std::string> firstRow;
     firstRow.push_back(ANSIToUTF8("工号"));
     firstRow.push_back(ANSIToUTF8("名字"));
@@ -356,6 +355,195 @@ void CAnalysisTools::SaveScoreExcel(xlnt::workbook &outWb, const char* pTitle)
         {
             wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));
         }
+    }
+}
+
+void CAnalysisTools::SaveRankExcel(xlnt::workbook &outWb, const char* pTitle)
+{
+    xlnt::worksheet ws = outWb.active_sheet();
+    ws.title("Sheet1");
+    //xlnt::worksheet wsOut = outWb.create_sheet("Sheet1"); // copy a sheet before doing anything with "Sheet1"
+    xlnt::worksheet wsOut = outWb.copy_sheet(ws);
+    wsOut.title(ANSIToUTF8(pTitle));
+    std::vector< std::vector<std::string> > wholeWorksheet;
+
+    const std::vector<std::string> nullTitleRow;
+    this->SaveRankExcelAverageScore("          平均分排行榜          ", wholeWorksheet, eGameCard_All);
+    wholeWorksheet.push_back(nullTitleRow);
+    wholeWorksheet.push_back(nullTitleRow);
+    this->SaveRankExcelTotalScore("          狼人阵营总分排行榜          ", wholeWorksheet, eGameCard_Bad);
+    wholeWorksheet.push_back(nullTitleRow);
+    wholeWorksheet.push_back(nullTitleRow);
+    this->SaveRankExcelTotalScore("          村民总分排行榜          ", wholeWorksheet, eGameCard_Cm);
+    wholeWorksheet.push_back(nullTitleRow);
+    wholeWorksheet.push_back(nullTitleRow);
+    this->SaveRankExcelTotalScore("          女巫总分排行榜          ", wholeWorksheet, eGameCard_Nv);
+    wholeWorksheet.push_back(nullTitleRow);
+    wholeWorksheet.push_back(nullTitleRow);
+    this->SaveRankExcelTotalScore("          猎人总分排行榜          ", wholeWorksheet, eGameCard_Lr);
+
+    for (int fOut = 0; fOut < wholeWorksheet.size(); fOut++)
+    {
+        for (int fIn = 0; fIn < wholeWorksheet.at(fOut).size(); fIn++)
+        {
+            wsOut.cell(xlnt::cell_reference(fIn + 1, fOut + 1)).value(wholeWorksheet.at(fOut).at(fIn));
+        }
+    }
+}
+
+void CAnalysisTools::SaveRankExcelAverageScore(const char* pTitle, std::vector< std::vector<std::string> > &wholeWorksheet, eGameCard eType)
+{
+    std::vector<std::string> titleRow;
+    titleRow.push_back(ANSIToUTF8(pTitle));
+    wholeWorksheet.push_back(titleRow);
+
+
+    std::vector<std::string> firstRow;
+    firstRow.push_back(ANSIToUTF8("排名"));
+    firstRow.push_back(ANSIToUTF8("工号"));
+    firstRow.push_back(ANSIToUTF8("名字"));
+    firstRow.push_back(ANSIToUTF8(GameCardTagStrs[eType] + "总场数"));
+    firstRow.push_back(ANSIToUTF8(GameCardTagStrs[eType] + "平均分"));
+
+    wholeWorksheet.push_back(firstRow);
+
+    std::vector< PlayVecData> rankData;
+    const std::map<int, PlayVecData> & mapPlayVecData = CDataMgrInst::singleton()->getPlayVecData();
+    for (std::map<int, PlayVecData>::const_iterator iter = mapPlayVecData.begin();
+        iter != mapPlayVecData.end();
+        iter++) {
+        rankData.push_back(iter->second);
+    }
+
+    // 平均分
+    std::sort(rankData.begin(), rankData.end(),
+        [=](const PlayVecData &left, const PlayVecData &right)->bool {
+        float leftScore = 0;
+        float rightScore = 0;
+        std::map<eGameCard, ScoreData>::const_iterator iterLeft = left.mapScore.find(eType);
+        if (iterLeft != left.mapScore.end()) {
+            leftScore = iterLeft->second.averageScore;
+        }
+        std::map<eGameCard, ScoreData>::const_iterator iterRight = right.mapScore.find(eType);
+        if (iterRight != right.mapScore.end()) {
+            rightScore = iterRight->second.averageScore;
+        }
+
+        return leftScore > rightScore;
+    }
+    );
+
+    int rankNum = 0;
+    float lastScore = -1;
+    char tempStr[100];
+    for (unsigned int i = 0; i < rankData.size(); i++) {
+        std::vector<std::string> singleRow;
+        const PlayVecData &vecDate = rankData[i];
+
+        float averScore = 0;
+        std::map<eGameCard, ScoreData>::const_iterator iterRank = vecDate.mapScore.find(eType);
+        if (iterRank != vecDate.mapScore.end()) {
+            averScore = iterRank->second.averageScore;
+        }
+        if (averScore != lastScore) {
+            rankNum++;
+            lastScore = averScore;
+        }
+
+        singleRow.push_back(std::to_string(rankNum));
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
+        singleRow.push_back(ANSIToUTF8(vecDate.vecData[0].name));
+
+        std::map<eGameCard, ScoreData>::const_iterator iterWin = vecDate.mapScore.find(eType);
+        if (iterWin != vecDate.mapScore.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.totalRound));
+
+            memset(tempStr, 0, sizeof(tempStr));
+            sprintf_s(tempStr, sizeof(tempStr), "%.2f", iterWin->second.averageScore);
+            singleRow.push_back(tempStr);
+        }
+        else 
+        {
+            singleRow.push_back("0");
+            singleRow.push_back("0");
+        }
+
+
+        wholeWorksheet.push_back(singleRow);
+    }
+}
+
+void CAnalysisTools::SaveRankExcelTotalScore(const char* pTitle, std::vector< std::vector<std::string> > &wholeWorksheet, eGameCard eType)
+{
+    std::vector<std::string> titleRow;
+    titleRow.push_back(ANSIToUTF8(pTitle));
+    wholeWorksheet.push_back(titleRow);
+
+    std::vector<std::string> firstRow;
+    firstRow.push_back(ANSIToUTF8("排名"));
+    firstRow.push_back(ANSIToUTF8("工号"));
+    firstRow.push_back(ANSIToUTF8("名字"));
+    firstRow.push_back(ANSIToUTF8(GameCardTagStrs[eType] +"总场数"));
+    firstRow.push_back(ANSIToUTF8(GameCardTagStrs[eType] + "总分"));
+
+    wholeWorksheet.push_back(firstRow);
+
+    std::vector< PlayVecData> rankData;
+    const std::map<int, PlayVecData> & mapPlayVecData = CDataMgrInst::singleton()->getPlayVecData();
+    for (std::map<int, PlayVecData>::const_iterator iter = mapPlayVecData.begin();
+        iter != mapPlayVecData.end();
+        iter++) {
+        rankData.push_back(iter->second);
+    }
+    // 狼人阵营总分
+    std::sort(rankData.begin(), rankData.end(),
+        [=](const PlayVecData &left, const PlayVecData &right)->bool {
+        int leftScore = 0;
+        int rightScore = 0;
+        std::map<eGameCard, ScoreData>::const_iterator iterLeft = left.mapScore.find(eType);
+        if (iterLeft != left.mapScore.end()) {
+            leftScore = iterLeft->second.totalScore;
+        }
+        std::map<eGameCard, ScoreData>::const_iterator iterRight = right.mapScore.find(eType);
+        if (iterRight != right.mapScore.end()) {
+            rightScore = iterRight->second.totalScore;
+        }
+
+        return leftScore > rightScore;
+    }
+    );
+    int rankNum = 0;
+    int lastTotalScore = -1;
+    for (unsigned int i = 0; i < rankData.size(); i++) {
+        std::vector<std::string> singleRow;
+        const PlayVecData &vecDate = rankData[i];
+
+        int totoalScore = 0;
+        std::map<eGameCard, ScoreData>::const_iterator iterRank = vecDate.mapScore.find(eType);
+        if (iterRank != vecDate.mapScore.end()) {
+            totoalScore = iterRank->second.totalScore;
+        }
+        if (totoalScore != lastTotalScore) {
+            rankNum++;
+            lastTotalScore = totoalScore;
+        }
+
+        singleRow.push_back(std::to_string(rankNum));
+        singleRow.push_back(std::to_string(vecDate.vecData[0].jobNum));
+        singleRow.push_back(ANSIToUTF8(vecDate.vecData[0].name));
+
+        std::map<eGameCard, ScoreData>::const_iterator iterWin = vecDate.mapScore.find(eType);
+        if (iterWin != vecDate.mapScore.end()) {
+            singleRow.push_back(std::to_string(iterWin->second.totalRound));
+            singleRow.push_back(std::to_string(iterWin->second.totalScore));
+        }
+        else
+        {
+            singleRow.push_back("0");
+            singleRow.push_back("0");
+        }
+
+        wholeWorksheet.push_back(singleRow);
     }
 }
 

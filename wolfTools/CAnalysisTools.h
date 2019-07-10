@@ -21,6 +21,10 @@ public:
     void SaveExcel(const char* path,const char* excelName);
     void SaveWinRateExcel(xlnt::workbook &outWb,const char* pTitle);
     void SaveScoreExcel(xlnt::workbook &outWb,const char* pTitle);
+    void SaveRankExcel(xlnt::workbook &outWb,const char* pTitle);
+    void SaveRankExcelAverageScore(const char* pTitle, std::vector< std::vector<std::string> > &wholeWorksheet, eGameCard eType);
+    void SaveRankExcelTotalScore(const char* pTitle, std::vector< std::vector<std::string> > &wholeWorksheet,eGameCard eType);
+    
 
 public:
     void setLuckToDetailTotalScore(bool bVal);

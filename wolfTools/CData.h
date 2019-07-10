@@ -24,10 +24,11 @@ enum eGameCard {
     eGameCard_Good,
     eGameCard_Bad,
     eGameCard_All,
+    eGameCard_Count_Everything,
 };
 
 // 与excel统一
-const std::string GameCardTagStrs[eGameCard_Count] = {
+const std::string GameCardTagStrs[eGameCard_Count_Everything] = {
     "狼人"
     ,"狼王"
     ,"狼兄"
@@ -39,6 +40,10 @@ const std::string GameCardTagStrs[eGameCard_Count] = {
     ,"白痴"
     ,"守卫"
     ,"黑市商人"
+    ,"错误数据"
+    ,"好人阵营"
+    ,"狼人阵营"
+    ,"总阵营"
 };
 
 enum eGameCamp {
