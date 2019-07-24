@@ -8,6 +8,10 @@
 #include "CTools.h"
 #include "CAnalysisTools.h"
 
+#include<io.h>
+#include<string>
+//#include<iostream>
+#include<vector>
 
 using namespace std;
 
@@ -126,9 +130,89 @@ void testRead() {
     std::clog << "Processing complete" << std::endl;    
 }
 
+void getFiles(string path, vector<string>& files)
+{
+    //文件句柄  
+    long   hFile = 0;
+    //文件信息  
+    struct _finddata_t fileinfo;
+    string p;
+    if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1)
+    {
+        do
+        {
+            //如果是目录,迭代之  
+            //如果不是,加入列表  
+            if ((fileinfo.attrib &  _A_SUBDIR))
+            {
+                if (strcmp(fileinfo.name, ".") != 0 && strcmp(fileinfo.name, "..") != 0)
+                    getFiles(p.assign(path).append("\\").append(fileinfo.name), files);
+            }
+            else
+            {
+                files.push_back(p.assign(path).append("\\").append(fileinfo.name));
+            }
+        } while (_findnext(hFile, &fileinfo) == 0);
+        _findclose(hFile);
+    }
+}
+
+void LXQ() 
+{
+    std::cout << "欢迎李皮皮" << std::endl;
+    vector<string> files;
+    ////获取该路径下的所有文件  
+    getFiles("./Cal", files);
+    
+    struct sLXQParm {
+        std::string name;
+        int score;
+    };
+
+    int nNameLine, nStarTag, nEndTag, nScoreLine;
+    std::cout << "输入名字所在行" << std::endl;
+    std::cin >> nNameLine;
+    std::cout << "输入名字起始列" << std::endl;
+    std::cin >> nStarTag;
+    std::cout << "输入名字结束列" << std::endl;
+    std::cin >> nEndTag;
+    std::cout << "输入分数行" << std::endl;
+    std::cin >> nScoreLine; 
+    
+    int nNum = nEndTag - nStarTag + 1;
+
+
+    for (unsigned int i = 0; i < files.size(); i++) {
+        xlnt::workbook wb;
+        wb.load(files[i].c_str());
+        auto ws = wb.active_sheet();
+
+        int tag = nStarTag;
+        for (unsigned int j = tag; j <= nEndTag; j++) {
+            std::string nameTemp = ws.cell(j,nNameLine).to_string();
+            std::string name = UTF8ToANSI(nameTemp);
+            int score = atoi(ws.cell(j, nScoreLine).to_string().c_str());
+
+            sLXQParm parm;
+            parm.name = name;
+            parm.score = score;
+
+        }
+
+        
+        
+
+    }
+    
+
+
+
+}
+
 int main()
 {    
-    CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
+    LXQ();
+    //CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
     //testWrite();
     
     std::cout << "Hello World!\n"; 
