@@ -157,9 +157,15 @@ void getFiles(string path, vector<string>& files)
     }
 }
 
+double round(double d)
+{
+    return floor(d + 0.5);
+}
+
 void LXQ() 
 {
     std::cout << "欢迎李皮皮" << std::endl;
+    std::cout << "1 将文档拷贝到Cal文件夹下 2 文档名需要为非中文 3 该Excel必须关闭" << std::endl;
     vector<string> files;
     ////获取该路径下的所有文件  
     getFiles("./Cal", files);
@@ -169,18 +175,53 @@ void LXQ()
         int score;
     };
 
-    int nNameLine, nStarTag, nEndTag, nScoreLine;
-    std::cout << "输入名字所在行" << std::endl;
-    std::cin >> nNameLine;
-    std::cout << "输入名字起始列" << std::endl;
-    std::cin >> nStarTag;
-    std::cout << "输入名字结束列" << std::endl;
-    std::cin >> nEndTag;
-    std::cout << "输入分数行" << std::endl;
-    std::cin >> nScoreLine; 
+    struct sLXQPersonData {
+        std::string name;
+        std::vector<sLXQParm> m_vecData;
+        int nAverageScore;
+        void CalAvage() {
+            unsigned int nSize = m_vecData.size();
+            float nSCore = 0.0f;
+            nAverageScore = 0;
+            for (unsigned int i = 0; i < nSize; i++) {
+                nSCore += m_vecData[i].score;
+            }
+            nAverageScore = round(nSCore / nSize);
+        }
+    };
+
+
+    int nNameLine = 4;
+    int nStarTag = 'I' - 'A' + 1;
+    int nEndTag = 'S' - 'A' + 1;
+    int nScoreLine = 24;
+    bool bChange = false;
+
+    char c = 'A' + 2;
+
+    std::cout << "名字行为" << nNameLine << "行，列为" << (char)('A' + nStarTag-1) << " ~ " << (char)('A' + nEndTag - 1) << "，总分在" << nScoreLine << "行" << std::endl;
+    std::cout << "是否要修改 Y/N ?" << std::endl;
+    char tempChar;
+    std::cin >> tempChar;
+    if (tempChar == 'Y' || tempChar == 'y') {
+        bChange = true;
+    }
+    if (bChange) {
+        std::cout << "输入名字所在行" << std::endl;
+        std::cin >> nNameLine;
+        std::cout << "输入名字起始列(A～Z)" << std::endl;
+
+        std::cin >> tempChar;
+        nStarTag = tempChar - 'A' + 1;
+        std::cout << "输入名字结束列(A～Z)" << std::endl;
+        std::cin >> tempChar;
+        nEndTag = tempChar - 'A' + 1;
+        std::cout << "输入分数行" << std::endl;
+        std::cin >> nScoreLine;
+    }
     
     int nNum = nEndTag - nStarTag + 1;
-
+    std::map<std::string, sLXQPersonData> mapData;
 
     for (unsigned int i = 0; i < files.size(); i++) {
         xlnt::workbook wb;
@@ -197,14 +238,33 @@ void LXQ()
             parm.name = name;
             parm.score = score;
 
+            if (mapData.find(parm.name) == mapData.end()) {
+                sLXQPersonData data;
+                data.name = parm.name;
+                mapData.insert(std::make_pair(parm.name,data));
+            }
+            
+            mapData[parm.name].m_vecData.push_back(parm);
         }
-
-        
-        
-
     }
-    
+    std::cout << "一共" << files.size() << "份文档" << std::endl;
+    std::vector<sLXQPersonData> erorVec;
+    for (std::map<std::string, sLXQPersonData>::iterator iter = mapData.begin();
+        iter != mapData.end();iter++) {
+        iter->second.CalAvage();
+        if (iter->second.m_vecData.size() != files.size()) {
+            erorVec.push_back(iter->second);
+        }
+        std::cout << iter->first << " " << iter->second.nAverageScore << std::endl;
+    }
+    std::cout << "" << std::endl;
+    std::cout << "可能有错别字的人有" << std::endl;
+    for (unsigned int i = 0; i < erorVec.size(); i++) {
+        std::cout << erorVec[i].name << "(" << erorVec[i].m_vecData.size() << "份)" << std::endl;
+    }
 
+    std::cout << "输入任意字符回车结束程序" << std::endl;
+    std::cin >> tempChar;
 
 
 }
@@ -215,7 +275,7 @@ int main()
     //CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
     //testWrite();
     
-    std::cout << "Hello World!\n"; 
+    //std::cout << "Hello World!\n"; 
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
