@@ -271,8 +271,8 @@ void LXQ()
 
 int main()
 {    
-    LXQ();
-    //CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
+    //LXQ();
+    CAnalysisToolsInst::singleton()->InitLoad("./read.xlsx");
     //testWrite();
     
     //std::cout << "Hello World!\n"; 
