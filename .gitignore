@@ -6,3 +6,8 @@
 /wolfTools/Release
 wolfTools/~$OutRank.xlsx
 /zip/WolfTools
+*.exp
+Debug/wolfTools.lib
+*.iobj
+Release/wolfTools.lib
+*.ipdb
